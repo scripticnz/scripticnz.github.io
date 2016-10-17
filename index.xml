@@ -106,7 +106,7 @@ ptvsd.wait_for_attach()
 
 &lt;p&gt;NB: If you click the Find button you will receive the following error because Python Tools has not implemented the find dialog.&lt;/p&gt;
 
-&lt;p&gt;&lt;a href=&#34;https://github.com/scripticnz/scripticnz.github.io/blob/master/blogposts20161010port-selector-error.png&#34;&gt;Error&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/scripticnz/scripticnz.github.io/master/blog/posts/2016/10/10/port-selector-error.PNG&#34; alt=&#34;Error&#34; title=&#34;Error&#34; /&gt;&lt;/p&gt;
 </description>
     </item>
     
