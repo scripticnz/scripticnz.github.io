@@ -17,9 +17,15 @@
       <guid>http://www.scriptic.co.nz/blog/2016/10/using-python-tools-for-visual-studio-to-debug-a-google-app-engine-project/</guid>
       <description>
 
-&lt;h3 id=&#34;configuration&#34;&gt;Configuration.&lt;/h3&gt;
+&lt;h3 id=&#34;general-setup&#34;&gt;General Setup.&lt;/h3&gt;
 
-&lt;p&gt;First we need to install &lt;a href=&#34;https://github.com/Microsoft/PTVS&#34;&gt;Python Tools for Visual Studio&lt;/a&gt; which is now included in the list of features when running setup.&lt;/p&gt;
+&lt;p&gt;First we need to install the following packages&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/Microsoft/PTVS&#34;&gt;Python Tools for Visual Studio&lt;/a&gt; which is now included in the list of features when running setup.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.python.org&#34;&gt;Python 2.7&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://cloud.google.com/appengine/downloads&#34;&gt;Google App Engine SDK for Python&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
 
 &lt;p&gt;Next, create a Python project, create a virtual environment, and install the ptvsd python package.&lt;/p&gt;
 
@@ -28,7 +34,7 @@
 &lt;p&gt;General&lt;/p&gt;
 
 &lt;ul&gt;
-&lt;li&gt;Startup File: C:\Program Files (x86)\Google\google_appengine\dev_appserver.py&lt;/li&gt;
+&lt;li&gt;Startup File: C:\Program Files (x86)\Google\google_appengine\dev_appserver.py OR C:\Program Files (x86)\Google\Cloud SDK\google-cloud-sdk\bin\dev_appserver.py OR similar&lt;/li&gt;
 &lt;li&gt;Working Directory: .&lt;/li&gt;
 &lt;li&gt;Interpreter: Env (Python 2.7)&lt;/li&gt;
 &lt;/ul&gt;
@@ -42,48 +48,7 @@
 
 &lt;h3 id=&#34;add-project-files&#34;&gt;Add project files.&lt;/h3&gt;
 
-&lt;h4 id=&#34;app-yaml&#34;&gt;app.yaml&lt;/h4&gt;
-
-&lt;pre&gt;&lt;code&gt;application: &amp;lt;app engine project name&amp;gt;
-version: 1
-runtime: python27
-api_version: 1
-threadsafe: true
-
-builtins:
-- appstats: on
-- admin_redirect: on
-- deferred: on
-- remote_api: on
-
-libraries:
-- name: jinja2
-  version: &amp;quot;2.6&amp;quot;
-- name: markupsafe
-  version: &amp;quot;0.15&amp;quot;
-
-inbound_services:
-- warmup
-
-handlers:
-
-- url: /static
-  static_dir: application/static
-  login: required
-
-- url: .*
-  script: run.application.app
-  login: required
-
-skip_files:
-- ^bin/(.*/)?
-- ^obj/(.*/)?
-- ^env/(.*/)?
-- ^\.pyc
-- \.pyproj
-- \web.config
-- \web.debug.config
-&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;An empty Flask project that is also configured for GAE can be found &lt;a href=&#34;https://github.com/krisbrooking/parched&#34;&gt;here&lt;/a&gt;. Prior to running the solution, it is necessary to add a virtual environment named &amp;ldquo;env&amp;rdquo;, and install &amp;ldquo;Flask&amp;rdquo; and &amp;ldquo;ptvsd&amp;rdquo;.&lt;/p&gt;
 
 &lt;h4 id=&#34;pydevd-startup-py&#34;&gt;pydevd_startup.py&lt;/h4&gt;
 

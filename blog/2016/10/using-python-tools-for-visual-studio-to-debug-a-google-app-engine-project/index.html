@@ -73,9 +73,15 @@
                         <br>
                         
 
-<h3 id="configuration">Configuration.</h3>
+<h3 id="general-setup">General Setup.</h3>
 
-<p>First we need to install <a href="https://github.com/Microsoft/PTVS">Python Tools for Visual Studio</a> which is now included in the list of features when running setup.</p>
+<p>First we need to install the following packages</p>
+
+<ul>
+<li><a href="https://github.com/Microsoft/PTVS">Python Tools for Visual Studio</a> which is now included in the list of features when running setup.</li>
+<li><a href="http://www.python.org">Python 2.7</a></li>
+<li><a href="https://cloud.google.com/appengine/downloads">Google App Engine SDK for Python</a></li>
+</ul>
 
 <p>Next, create a Python project, create a virtual environment, and install the ptvsd python package.</p>
 
@@ -84,7 +90,7 @@
 <p>General</p>
 
 <ul>
-<li>Startup File: C:\Program Files (x86)\Google\google_appengine\dev_appserver.py</li>
+<li>Startup File: C:\Program Files (x86)\Google\google_appengine\dev_appserver.py OR C:\Program Files (x86)\Google\Cloud SDK\google-cloud-sdk\bin\dev_appserver.py OR similar</li>
 <li>Working Directory: .</li>
 <li>Interpreter: Env (Python 2.7)</li>
 </ul>
@@ -98,48 +104,7 @@
 
 <h3 id="add-project-files">Add project files.</h3>
 
-<h4 id="app-yaml">app.yaml</h4>
-
-<pre><code>application: &lt;app engine project name&gt;
-version: 1
-runtime: python27
-api_version: 1
-threadsafe: true
-
-builtins:
-- appstats: on
-- admin_redirect: on
-- deferred: on
-- remote_api: on
-
-libraries:
-- name: jinja2
-  version: &quot;2.6&quot;
-- name: markupsafe
-  version: &quot;0.15&quot;
-
-inbound_services:
-- warmup
-
-handlers:
-
-- url: /static
-  static_dir: application/static
-  login: required
-
-- url: .*
-  script: run.application.app
-  login: required
-
-skip_files:
-- ^bin/(.*/)?
-- ^obj/(.*/)?
-- ^env/(.*/)?
-- ^\.pyc
-- \.pyproj
-- \web.config
-- \web.debug.config
-</code></pre>
+<p>An empty Flask project that is also configured for GAE can be found <a href="https://github.com/krisbrooking/parched">here</a>. Prior to running the solution, it is necessary to add a virtual environment named &ldquo;env&rdquo;, and install &ldquo;Flask&rdquo; and &ldquo;ptvsd&rdquo;.</p>
 
 <h4 id="pydevd-startup-py">pydevd_startup.py</h4>
 
