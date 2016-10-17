@@ -35,6 +35,17 @@ a:hover{
     text-decoration: none;
 }
 
+p > a {
+    color: #337ab7;
+    text-decoration: underline;
+    transition: color 0.2s ease-in;
+}
+
+p > a:hover{
+    text-decoration: underline;
+}
+
+
 .pull-right {
     float: right !important;
 }
@@ -168,6 +179,7 @@ a:hover{
   color: #38a7bb;
   background-color: #ffffff;
   border-color: #38a7bb;
+  text-decoration: none;
 }
 
 .btn-template-main:hover,
