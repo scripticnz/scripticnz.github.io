@@ -11,10 +11,10 @@
     
     <item>
       <title>Using Python Tools for Visual Studio to debug a Google App Engine project</title>
-      <link>http://www.scriptic.co.nz/blog/2016/10/10/Using-Python-Tools-for-Visual-Studio-to-debug-a-Google-App-Engine-project/</link>
+      <link>http://www.scriptic.co.nz/blog/2016/10/using-python-tools-for-visual-studio-to-debug-a-google-app-engine-project/</link>
       <pubDate>Mon, 10 Oct 2016 00:00:00 +0000</pubDate>
       
-      <guid>http://www.scriptic.co.nz/blog/2016/10/10/Using-Python-Tools-for-Visual-Studio-to-debug-a-Google-App-Engine-project/</guid>
+      <guid>http://www.scriptic.co.nz/blog/2016/10/using-python-tools-for-visual-studio-to-debug-a-google-app-engine-project/</guid>
       <description>
 
 &lt;h3 id=&#34;configuration&#34;&gt;Configuration.&lt;/h3&gt;
@@ -106,7 +106,7 @@ ptvsd.wait_for_attach()
 
 &lt;p&gt;NB: If you click the Find button you will receive the following error because Python Tools has not implemented the find dialog.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/scripticnz/scripticnz.github.io/master/blog/2016/10/10/port-selector-error.PNG&#34; alt=&#34;Error&#34; title=&#34;Error&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/scripticnz/scripticnz.github.io/master/blog/images/port-selector-error.PNG&#34; alt=&#34;Error&#34; title=&#34;Error&#34; /&gt;&lt;/p&gt;
 </description>
     </item>
     
