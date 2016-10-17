@@ -17,7 +17,7 @@
       <guid>http://www.scriptic.co.nz/blog/2016/10/10/Using-Python-Tools-for-Visual-Studio-to-debug-a-Google-App-Engine-project/</guid>
       <description>
 
-&lt;h3 id=&#34;configuration&#34;&gt;Configuration&lt;/h3&gt;
+&lt;h3 id=&#34;configuration&#34;&gt;Configuration.&lt;/h3&gt;
 
 &lt;p&gt;First we need to install &lt;a href=&#34;https://github.com/Microsoft/PTVS&#34;&gt;Python Tools for Visual Studio&lt;/a&gt; which is now included in the list of features when running setup.&lt;/p&gt;
 
@@ -40,7 +40,7 @@
 &lt;li&gt;Script Arguments: &amp;ndash;python_startup_script=&amp;ldquo;.\pydevd_startup.py&amp;rdquo; &amp;ndash;automatic_restart=no &amp;ndash;max_module_instances=&amp;ldquo;default:1&amp;rdquo; &amp;ldquo;.\app.yaml&amp;rdquo;&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h3 id=&#34;add-project-files&#34;&gt;Add project files&lt;/h3&gt;
+&lt;h3 id=&#34;add-project-files&#34;&gt;Add project files.&lt;/h3&gt;
 
 &lt;h4 id=&#34;app-yaml&#34;&gt;app.yaml&lt;/h4&gt;
 
@@ -92,7 +92,7 @@ ptvsd.enable_attach(secret = &#39;secret&#39;)
 ptvsd.wait_for_attach()
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;h3 id=&#34;debugging&#34;&gt;Debugging&lt;/h3&gt;
+&lt;h3 id=&#34;debugging&#34;&gt;Debugging.&lt;/h3&gt;
 
 &lt;p&gt;Start the project by pressing F5. The GAE dev server should start, however the debugger is not yet attached to the process.&lt;/p&gt;
 
@@ -106,7 +106,7 @@ ptvsd.wait_for_attach()
 
 &lt;p&gt;NB: If you click the Find button you will receive the following error because Python Tools has not implemented the find dialog.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/scripticnz/scripticnz.github.io/master/blog/posts/2016/10/10/port-selector-error.PNG&#34; alt=&#34;Error&#34; title=&#34;Error&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/scripticnz/scripticnz.github.io/master/blog/2016/10/10/port-selector-error.PNG&#34; alt=&#34;Error&#34; title=&#34;Error&#34; /&gt;&lt;/p&gt;
 </description>
     </item>
     
