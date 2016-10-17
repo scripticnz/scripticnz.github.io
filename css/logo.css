@@ -1,0 +1,72 @@
+.logo-wrap {
+    margin: 0 auto;
+    padding: 3em 0 1em 0;
+    text-align: center;
+    width: 300px;
+}
+
+.logo-bg{
+    height: 120px;
+    width: 120px;
+    margin: 0 auto;
+    background: url(../img/logo-bg.png) 0 0 no-repeat;
+}
+
+.logo-bg a {
+    border: 0;
+}
+
+.logo {
+    height: 120px;
+    width: 120px;
+    background: url(../img/logo.png) 0 0 no-repeat;
+    -webkit-animation: console 1.2s infinite;
+    -moz-animation: console 1.2s infinite;
+    -o-animation: console 1.2s infinite;
+    animation: console 1.2s infinite;
+}
+
+.logo-title{
+    color: #ffffff;
+    font-size: 6em;
+    font-family: 'Exo', sans-serif;
+}
+
+.logo-tagline{
+    color: #ffffff;
+    font-size: 2em;
+    font-family: 'Ubuntu', sans-serif;
+    border-bottom: 1px solid;
+}
+
+@-webkit-keyframes console {
+0% { opacity: 0; }
+40% { opacity: 0; }
+50% { opacity: 1; }
+90% { opacity: 1; }
+100% { opacity: 0; }
+}
+
+@-moz-keyframes console {
+0% { opacity: 0; }
+40% { opacity: 0; }
+50% { opacity: 1; }
+90% { opacity: 1; }
+100% { opacity: 0; }
+}
+
+@-o-keyframes console {
+0% { opacity: 0; }
+40% { opacity: 0; }
+50% { opacity: 1; }
+90% { opacity: 1; }
+100% { opacity: 0; }
+}
+
+@keyframes console {
+0% { opacity: 0; }
+40% { opacity: 0; }
+50% { opacity: 1; }
+90% { opacity: 1; }
+100% { opacity: 0; }
+}

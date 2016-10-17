@@ -1,0 +1,220 @@
+html,body{
+    padding: 0;
+    margin: 0;
+    height: 100%;
+    width: 100%;
+    background-color: white !important;
+    overflow-x: hidden;
+}
+
+h1, .h1, h2, .h2, h3, .h3 {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+    font-family: "Ubuntu", "Roboto", Helvetica, Arial, sans-serif;
+    font-weight: 900;
+    line-height: 1.1;
+    color: #38a7bb;
+}
+
+p {
+    font-family: 'Roboto', Arial, Helvetica, sans-serif;
+    transition: color 0.2s ease-in;
+    text-align: left;
+}
+
+a {
+    color: #142B39;
+    text-decoration: none;
+    transition: color 0.2s ease-in;
+}
+
+a:hover{
+    text-decoration: none;
+}
+
+.pull-right {
+    float: right !important;
+}
+
+.pull-left {
+    float: left !important;
+}
+
+.text-uppercase {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+/* Layout */
+
+#container {
+    padding-left: 0;
+    -webkit-transition: all 0.5s ease;
+    -moz-transition: all 0.5s ease;
+    -o-transition: all 0.5s ease;
+    transition: all 0.5s ease;
+}
+
+#container.toggled {
+    padding-left: 400px;
+}
+
+#sidebar-container {
+    z-index: 1000;
+    position: fixed;
+    left: 400px;
+    width: 0;
+    height: 100%;
+    margin-left: -400px;
+    overflow-y: auto;
+    background: radial-gradient(circle, #1B394B 50%, #142B39 100%) no-repeat;
+    -webkit-transition: all 0.5s ease;
+    -moz-transition: all 0.5s ease;
+    -o-transition: all 0.5s ease;
+    transition: all 0.5s ease;
+}
+
+#container.toggled #sidebar-container {
+    width: 250px;
+}
+
+#content-container {
+    width: 100%;
+    position: absolute;
+    padding: 15px;
+}
+
+#container.toggled #content-container {
+    position: absolute;
+    margin-right: -400px;
+}
+
+#sidebar {
+    position: absolute;
+    width: 100%;
+    margin: 0 auto;
+}
+
+@media(min-width:768px) {
+    #container {
+        padding-left: 400px;
+    }
+
+    #container.toggled {
+        padding-left: 0;
+    }
+
+    #sidebar-container {
+        width: 400px;
+    }
+
+    #container.toggled #sidebar-container {
+        width: 0;
+    }
+
+    #content-container {
+        padding: 25px;
+        position: relative;
+    }
+
+    #container.toggled #content-container {
+        position: relative;
+        margin-right: 0;
+    }
+}
+
+/* Sidebar */
+
+.sidebar-link{
+    color: #cccccc;
+    font-weight: 400;
+    text-decoration: none;
+    transition: color 0.2s ease-in;
+}
+.sidebar-link:hover{
+    font-weight: 400;
+    text-decoration: none;
+    color: #ffffff;
+}
+
+/* Content */
+
+.blog-post-container{
+    padding: 3em 0;
+}
+
+.blog-post{
+    text-align: left;
+    padding-bottom: 1em;
+}
+
+.pagination{
+    display: block;
+}
+
+.btn-pagination{
+    font-size: 18px;
+    padding-bottom: 3em;
+}
+
+.btn-pagination-right{
+    float: right;
+}
+
+.btn-template-main {
+  color: #38a7bb;
+  background-color: #ffffff;
+  border-color: #38a7bb;
+}
+
+.btn-template-main:hover,
+.btn-template-main:focus,
+.btn-template-main:active,
+.btn-template-main.active,
+.open > .dropdown-toggle.btn-template-main {
+  color: #38a7bb;
+  background-color: #e6e6e6;
+  border-color: #2a7d8c;
+}
+
+.btn-template-main:active,
+.btn-template-main.active,
+.open > .dropdown-toggle.btn-template-main {
+  background-image: none;
+}
+
+.btn-template-main.disabled,
+.btn-template-main[disabled],
+fieldset[disabled] .btn-template-main,
+.btn-template-main.disabled:hover,
+.btn-template-main[disabled]:hover,
+fieldset[disabled] .btn-template-main:hover,
+.btn-template-main.disabled:focus,
+.btn-template-main[disabled]:focus,
+fieldset[disabled] .btn-template-main:focus,
+.btn-template-main.disabled:active,
+.btn-template-main[disabled]:active,
+fieldset[disabled] .btn-template-main:active,
+.btn-template-main.disabled.active,
+.btn-template-main[disabled].active,
+fieldset[disabled] .btn-template-main.active {
+  background-color: #ffffff;
+  border-color: #38a7bb;
+}
+
+.btn-template-main .badge {
+  color: #ffffff;
+  background-color: #38a7bb;
+}
+
+.btn-template-main:hover,
+.btn-template-main:focus,
+.btn-template-main:active,
+.btn-template-main.active {
+  background: #38a7bb;
+  color: #ffffff;
+  border-color: #38a7bb;
+}

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Blog-rsses on Scriptic</title>
+    <link>http://www.scriptic.co.nz/blog/index.xml</link>
+    <description>Recent content in Blog-rsses on Scriptic</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 10 Oct 2016 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://www.scriptic.co.nz/blog/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Using Python Tools for Visual Studio to debug a Google App Engine project</title>
+      <link>http://www.scriptic.co.nz/blog/posts/2016/10/10/python-tools-for-visual-studio/</link>
+      <pubDate>Mon, 10 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>http://www.scriptic.co.nz/blog/posts/2016/10/10/python-tools-for-visual-studio/</guid>
+      <description>
+
+&lt;h3 id=&#34;configuration&#34;&gt;Configuration&lt;/h3&gt;
+
+&lt;p&gt;First we need to install &lt;a href=&#34;https://github.com/Microsoft/PTVS&#34;&gt;Python Tools for Visual Studio&lt;/a&gt; which is now included in the list of features when running setup.&lt;/p&gt;
+
+&lt;p&gt;Next, create a Python project, create a virtual environment, and install the ptvsd python package.&lt;/p&gt;
+
+&lt;p&gt;Right click the project file -&amp;gt; Properties, and make the following changes.&lt;/p&gt;
+
+&lt;p&gt;General&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Startup File: C:\Program Files (x86)\Google\google_appengine\dev_appserver.py&lt;/li&gt;
+&lt;li&gt;Working Directory: .&lt;/li&gt;
+&lt;li&gt;Interpreter: Env (Python 2.7)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Debug&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Launch Mode: Standard Python Launcher&lt;/li&gt;
+&lt;li&gt;Script Arguments: &amp;ndash;python_startup_script=&amp;ldquo;.\pydevd_startup.py&amp;rdquo; &amp;ndash;automatic_restart=no &amp;ndash;max_module_instances=&amp;ldquo;default:1&amp;rdquo; &amp;ldquo;.\app.yaml&amp;rdquo;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;add-project-files&#34;&gt;Add project files&lt;/h3&gt;
+
+&lt;h4 id=&#34;app-yaml&#34;&gt;app.yaml&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code&gt;application: &amp;lt;app engine project name&amp;gt;
+version: 1
+runtime: python27
+api_version: 1
+threadsafe: true
+
+builtins:
+- appstats: on
+- admin_redirect: on
+- deferred: on
+- remote_api: on
+
+libraries:
+- name: jinja2
+  version: &amp;quot;2.6&amp;quot;
+- name: markupsafe
+  version: &amp;quot;0.15&amp;quot;
+
+inbound_services:
+- warmup
+
+handlers:
+
+- url: /static
+  static_dir: application/static
+  login: required
+
+- url: .*
+  script: run.application.app
+  login: required
+
+skip_files:
+- ^bin/(.*/)?
+- ^obj/(.*/)?
+- ^env/(.*/)?
+- ^\.pyc
+- \.pyproj
+- \web.config
+- \web.debug.config
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&#34;pydevd-startup-py&#34;&gt;pydevd_startup.py&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import ptvsd
+ptvsd.enable_attach(secret = &#39;secret&#39;)
+ptvsd.wait_for_attach()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;debugging&#34;&gt;Debugging&lt;/h3&gt;
+
+&lt;p&gt;Start the project by pressing F5. The GAE dev server should start, however the debugger is not yet attached to the process.&lt;/p&gt;
+
+&lt;p&gt;From the Debug menu click &amp;ldquo;Attach to Process&amp;hellip;&amp;rdquo;.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Select &amp;ldquo;Python remote (ptvsd)&amp;rdquo; as the Transport&lt;/li&gt;
+&lt;li&gt;Enter &lt;code&gt;tcp@//secret@localhost:5678&lt;/code&gt; as the Qualifier.&lt;/li&gt;
+&lt;li&gt;Press Enter to find the process, and Enter again to attach the debugger to it.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;NB: If you click the Find button you will receive the following error because Python Tools has not implemented the find dialog.&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://github.com/scripticnz/scripticnz.github.io/blob/master/blogposts20161010port-selector-error.png&#34;&gt;Error&lt;/a&gt;&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

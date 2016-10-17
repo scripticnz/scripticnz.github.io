@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="robots" content="all,follow">
+    <meta name="googlebot" content="index,follow,snippet,archive">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Using Python Tools for Visual Studio to debug a Google App Engine project</title>
+
+    <meta name="author" content="" />
+    <meta name="keywords" content="">
+
+    
+
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <link href="http://www.scriptic.co.nz//css/main.css" rel="stylesheet">
+    <link href="http://www.scriptic.co.nz//css/logo.css" rel="stylesheet">
+    
+        
+    <link href='https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Exo:400' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Ubuntu:400' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open Sans:400,300,100' rel='stylesheet' type='text/css'>
+
+    
+    
+</head>
+<body>
+    <div id="container">
+        <div id="sidebar-container">
+            <div id="sidebar">
+                <div class="logo-wrap">
+    <div class="logo-bg">
+        <a href="/">
+            <div class="logo">
+            </div>
+        </a>
+    </div>
+    <p class="logo-title text-center">scriptic</p>
+    <p class="logo-tagline text-center">it's hard to explain</p>
+    <div class="text-left">
+        <h4>
+            <a class="sidebar-link" href="https://github.com/scripticnz">
+                <i class="fa fa-github fa-fw" aria-hidden="true"></i>
+                Github
+            </a>
+        </h4>
+    </div>
+</div>
+            </div>
+        </div>
+        <div id="content-container">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="blog-post-container col-xs-12 col-sm-10 col-sm-offset-1">
+                        <div>
+                            <p class="pull-left">
+                                <a class="btn-pagination" href="javascript:history.back()">
+                                    <i class="fa fa-home fa-fw" aria-hidden="true"></i>
+                                    Home
+                                </a>
+                            </p>
+                            <p class="pull-right text-muted text-uppercase">
+                                <i class="fa fa-calendar"></i>
+                                    October 10, 2016
+                            </p>
+		                    <div style="clear: both;"></div>
+                        </div>
+                        <h1>
+                            <a href="">Using Python Tools for Visual Studio to debug a Google App Engine project</a>
+                        </h1>
+                        <br>
+                        
+
+<h3 id="configuration">Configuration</h3>
+
+<p>First we need to install <a href="https://github.com/Microsoft/PTVS">Python Tools for Visual Studio</a> which is now included in the list of features when running setup.</p>
+
+<p>Next, create a Python project, create a virtual environment, and install the ptvsd python package.</p>
+
+<p>Right click the project file -&gt; Properties, and make the following changes.</p>
+
+<p>General</p>
+
+<ul>
+<li>Startup File: C:\Program Files (x86)\Google\google_appengine\dev_appserver.py</li>
+<li>Working Directory: .</li>
+<li>Interpreter: Env (Python 2.7)</li>
+</ul>
+
+<p>Debug</p>
+
+<ul>
+<li>Launch Mode: Standard Python Launcher</li>
+<li>Script Arguments: &ndash;python_startup_script=&ldquo;.\pydevd_startup.py&rdquo; &ndash;automatic_restart=no &ndash;max_module_instances=&ldquo;default:1&rdquo; &ldquo;.\app.yaml&rdquo;</li>
+</ul>
+
+<h3 id="add-project-files">Add project files</h3>
+
+<h4 id="app-yaml">app.yaml</h4>
+
+<pre><code>application: &lt;app engine project name&gt;
+version: 1
+runtime: python27
+api_version: 1
+threadsafe: true
+
+builtins:
+- appstats: on
+- admin_redirect: on
+- deferred: on
+- remote_api: on
+
+libraries:
+- name: jinja2
+  version: &quot;2.6&quot;
+- name: markupsafe
+  version: &quot;0.15&quot;
+
+inbound_services:
+- warmup
+
+handlers:
+
+- url: /static
+  static_dir: application/static
+  login: required
+
+- url: .*
+  script: run.application.app
+  login: required
+
+skip_files:
+- ^bin/(.*/)?
+- ^obj/(.*/)?
+- ^env/(.*/)?
+- ^\.pyc
+- \.pyproj
+- \web.config
+- \web.debug.config
+</code></pre>
+
+<h4 id="pydevd-startup-py">pydevd_startup.py</h4>
+
+<pre><code class="language-python">import ptvsd
+ptvsd.enable_attach(secret = 'secret')
+ptvsd.wait_for_attach()
+</code></pre>
+
+<h3 id="debugging">Debugging</h3>
+
+<p>Start the project by pressing F5. The GAE dev server should start, however the debugger is not yet attached to the process.</p>
+
+<p>From the Debug menu click &ldquo;Attach to Process&hellip;&rdquo;.</p>
+
+<ul>
+<li>Select &ldquo;Python remote (ptvsd)&rdquo; as the Transport</li>
+<li>Enter <code>tcp@//secret@localhost:5678</code> as the Qualifier.</li>
+<li>Press Enter to find the process, and Enter again to attach the debugger to it.</li>
+</ul>
+
+<p>NB: If you click the Find button you will receive the following error because Python Tools has not implemented the find dialog.</p>
+
+<p><a href="https://github.com/scripticnz/scripticnz.github.io/blob/master/blogposts20161010port-selector-error.png">Error</a></p>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
