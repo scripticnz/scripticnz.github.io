@@ -3,7 +3,12 @@
   
   <url>
     <loc>http://www.scriptic.co.nz/</loc>
-    <lastmod>2016-10-10T00:00:00+00:00</lastmod>
+    <lastmod>2016-11-03T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://www.scriptic.co.nz/blog/2016/11/publishing-a-net-core-console-application-as-an-azure-web-job-from-visual-studio/</loc>
+    <lastmod>2016-11-03T00:00:00+00:00</lastmod>
   </url>
   
   <url>

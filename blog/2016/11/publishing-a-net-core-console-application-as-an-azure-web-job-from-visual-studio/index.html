@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="robots" content="all,follow">
+    <meta name="googlebot" content="index,follow,snippet,archive">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Publishing a .NET Core Console Application as an Azure Web Job from Visual Studio</title>
+
+    <meta name="author" content="" />
+    <meta name="keywords" content="">
+
+    
+
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <link href="http://www.scriptic.co.nz/css/main.css" rel="stylesheet">
+    <link href="http://www.scriptic.co.nz/css/logo.css" rel="stylesheet">
+    <link href="http://www.scriptic.co.nz/css/github.css" rel="stylesheet">
+    
+        
+    <link href='https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Exo:400' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Ubuntu:400' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open Sans:400,300,100' rel='stylesheet' type='text/css'>
+
+    
+    
+</head>
+<body>
+    <div id="container">
+        <div id="sidebar-container">
+            <div id="sidebar">
+                <div class="logo-wrap">
+    <div class="logo-bg">
+        <a href="/">
+            <div class="logo">
+            </div>
+        </a>
+    </div>
+    <p class="logo-title text-center">scriptic</p>
+    <p class="logo-tagline text-center">it's hard to explain</p>
+    <div class="text-left">
+        <h4>
+            <a class="sidebar-link" href="https://github.com/scripticnz">
+                <i class="fa fa-github fa-fw" aria-hidden="true"></i>
+                Github
+            </a>
+        </h4>
+    </div>
+</div>
+            </div>
+        </div>
+        <div id="content-container">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="blog-post-container col-xs-12 col-sm-10 col-sm-offset-1">
+                        <div>
+                            <div class="pull-left">
+                                <a class="btn-pagination" href="javascript:history.back()">
+                                    <i class="fa fa-home fa-fw" aria-hidden="true"></i>
+                                    Home
+                                </a>
+                            </div>
+                            <p class="pull-right text-muted text-uppercase">
+                                <i class="fa fa-calendar"></i>
+                                    November 3, 2016
+                            </p>
+		                    <div style="clear: both;"></div>
+                        </div>
+                        <h1>
+                            <a href="">Publishing a .NET Core Console Application as an Azure Web Job from Visual Studio</a>
+                        </h1>
+                        <br>
+                        
+
+<h3 id="introduction">Introduction.</h3>
+
+<p>Azure web Jobs are super useful for long-running or low priority tasks that need to be run in the background of a web application. They are a light weight alternative to worker roles or virtual machines.</p>
+
+<p>With the knowledge that it is a supported scenario, I decided to experiment with using a .NET Core console application. I had absolutely no problems getting the application to run as a Web Job. However, I quickly noticed that the tooling to allow publishing of a .NET Core console application as an Azure Web Job is currently missing from Visual Studio.</p>
+
+<p>This isn&rsquo;t a big deal if you happen to have a web application in your VS solution. In that case we can copy the binaries for the console application under <code>\App_Data\Jobs\{Triggered|Continuous}\{Job Name}</code>. Then when we publish our web application, the Web Job is automatically created along side.</p>
+
+<h3 id="publishing-script">Publishing Script.</h3>
+
+<p>If there is no web application in the solution, we can still deploy the Web Job using WebDeploy. The way I did this was to bolt on to the end of the PowerShell script that&rsquo;s generated with a new publish profile. To begin, create a new publish profile and set the &ldquo;Publish Target&rdquo; to &ldquo;File System&rdquo; (currently the only option). In Visual Studio navigate to Properties -&gt; PublishProfiles and open the .ps1 script. It should look something like this.</p>
+
+<pre><code class="language-powershell">[cmdletbinding(SupportsShouldProcess=$true)]
+param($publishProperties=@{}, $packOutput, $pubProfilePath)
+
+# to learn more about this file visit https://go.microsoft.com/fwlink/?LinkId=524327
+
+try{
+    if ($publishProperties['ProjectGuid'] -eq $null){
+        $publishProperties['ProjectGuid'] = 'f535e246-be7e-476e-88c1-59f220079721'
+    }
+
+    $publishModulePath = Join-Path (Split-Path $MyInvocation.MyCommand.Path) 'publish-module.psm1'
+    Import-Module $publishModulePath -DisableNameChecking -Force
+
+    # call Publish-AspNet to perform the publish operation
+    Publish-AspNet -publishProperties $publishProperties -packOutput $packOutput -pubProfilePath $pubProfilePath
+}
+catch{
+    &quot;An error occurred during publish.`n{0}&quot; -f $_.Exception.Message | Write-Error
+}
+</code></pre>
+
+<p>We can modify the script so that after publishing the binaries they are deployed to Azure. This involves a couple of steps.</p>
+
+<ol>
+<li>We need to Zip all of the files up into an archive - this is the format that Azure expects.</li>
+<li>We need to push the Zip file up to Azure. The destination depends on the type of Web Job we are creating but looks something like <code>\App_Data\Jobs\Triggered\BackgroundJob</code>.</li>
+</ol>
+
+<p>The part of the script that does the deployment requires a couple things. First is a copy of <a href="https://github.com/davidebbo/WAWSDeploy">WAWSDeploy</a>, a handy wrapper around WebDeploy. Second is the PublishSettings file for the App Service. This can be downloaded from <a href="https://portal.azure.com">Azure</a> by navigating to the App Service -&gt; Overview and clicking &ldquo;Get publish profile&rdquo;.</p>
+
+<p>If you are going to do this, it is <strong>VERY IMPORTANT</strong> that you remember to keep the PublishSettings file outside of your solution so that it doesn&rsquo;t get pushed to your git repo - it contains your App Service secrets in plain text.</p>
+
+<p>After the line calling Publish-AspNet, append the following. Modify the last line for your environment. Now every time you right click your project and publish, the binaries will be WebDeployed up to Azure. You can even see the result of this in the Visual Studio Output window.</p>
+
+<pre><code class="language-powershell"># Find the Root Namespace by reading the .xproj file
+$projectFile = Get-ChildItem -Filter *.xproj | Select-Object -First 1
+$xml = [xml](Get-Content $projectFile)
+$node = $xml.Project.PropertyGroup | Where-Object { $_.Label -eq &quot;Globals&quot; } | Select-Object RootNamespace
+
+# Build paths for the Zip file
+$source = Join-Path $publishProperties[&quot;publishUrl&quot;] &quot;*&quot;
+$destination = Join-Path (Split-Path $publishProperties[&quot;publishUrl&quot;]) &quot;$($node.RootNamespace).zip&quot;
+
+Echo &quot;Creating Zip file from executable&quot;
+Compress-Archive -Path $source -DestinationPath $destination -Force
+
+WAWSDeploy.exe $destination &quot;C:\Users\%USERNAME%\Documents\myapp.azurewebsites.net.PublishSettings&quot; /t &quot;app_data\jobs\triggered\$($node.RootNamespace)&quot; /v
+</code></pre>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript" src="http://www.scriptic.co.nz/js/highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+</body>
+</html>

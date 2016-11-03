@@ -6,8 +6,79 @@
     <description>Recent content on Scriptic</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 10 Oct 2016 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 03 Nov 2016 00:00:00 +0000</lastBuildDate>
     <atom:link href="http://www.scriptic.co.nz/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Publishing a .NET Core Console Application as an Azure Web Job from Visual Studio</title>
+      <link>http://www.scriptic.co.nz/blog/2016/11/publishing-a-net-core-console-application-as-an-azure-web-job-from-visual-studio/</link>
+      <pubDate>Thu, 03 Nov 2016 00:00:00 +0000</pubDate>
+      
+      <guid>http://www.scriptic.co.nz/blog/2016/11/publishing-a-net-core-console-application-as-an-azure-web-job-from-visual-studio/</guid>
+      <description>
+
+&lt;h3 id=&#34;introduction&#34;&gt;Introduction.&lt;/h3&gt;
+
+&lt;p&gt;Azure web Jobs are super useful for long-running or low priority tasks that need to be run in the background of a web application. They are a light weight alternative to worker roles or virtual machines.&lt;/p&gt;
+
+&lt;p&gt;With the knowledge that it is a supported scenario, I decided to experiment with using a .NET Core console application. I had absolutely no problems getting the application to run as a Web Job. However, I quickly noticed that the tooling to allow publishing of a .NET Core console application as an Azure Web Job is currently missing from Visual Studio.&lt;/p&gt;
+
+&lt;p&gt;This isn&amp;rsquo;t a big deal if you happen to have a web application in your VS solution. In that case we can copy the binaries for the console application under &lt;code&gt;\App_Data\Jobs\{Triggered|Continuous}\{Job Name}&lt;/code&gt;. Then when we publish our web application, the Web Job is automatically created along side.&lt;/p&gt;
+
+&lt;h3 id=&#34;publishing-script&#34;&gt;Publishing Script.&lt;/h3&gt;
+
+&lt;p&gt;If there is no web application in the solution, we can still deploy the Web Job using WebDeploy. The way I did this was to bolt on to the end of the PowerShell script that&amp;rsquo;s generated with a new publish profile. To begin, create a new publish profile and set the &amp;ldquo;Publish Target&amp;rdquo; to &amp;ldquo;File System&amp;rdquo; (currently the only option). In Visual Studio navigate to Properties -&amp;gt; PublishProfiles and open the .ps1 script. It should look something like this.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-powershell&#34;&gt;[cmdletbinding(SupportsShouldProcess=$true)]
+param($publishProperties=@{}, $packOutput, $pubProfilePath)
+
+# to learn more about this file visit https://go.microsoft.com/fwlink/?LinkId=524327
+
+try{
+    if ($publishProperties[&#39;ProjectGuid&#39;] -eq $null){
+        $publishProperties[&#39;ProjectGuid&#39;] = &#39;f535e246-be7e-476e-88c1-59f220079721&#39;
+    }
+
+    $publishModulePath = Join-Path (Split-Path $MyInvocation.MyCommand.Path) &#39;publish-module.psm1&#39;
+    Import-Module $publishModulePath -DisableNameChecking -Force
+
+    # call Publish-AspNet to perform the publish operation
+    Publish-AspNet -publishProperties $publishProperties -packOutput $packOutput -pubProfilePath $pubProfilePath
+}
+catch{
+    &amp;quot;An error occurred during publish.`n{0}&amp;quot; -f $_.Exception.Message | Write-Error
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;We can modify the script so that after publishing the binaries they are deployed to Azure. This involves a couple of steps.&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;We need to Zip all of the files up into an archive - this is the format that Azure expects.&lt;/li&gt;
+&lt;li&gt;We need to push the Zip file up to Azure. The destination depends on the type of Web Job we are creating but looks something like &lt;code&gt;\App_Data\Jobs\Triggered\BackgroundJob&lt;/code&gt;.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;The part of the script that does the deployment requires a couple things. First is a copy of &lt;a href=&#34;https://github.com/davidebbo/WAWSDeploy&#34;&gt;WAWSDeploy&lt;/a&gt;, a handy wrapper around WebDeploy. Second is the PublishSettings file for the App Service. This can be downloaded from &lt;a href=&#34;https://portal.azure.com&#34;&gt;Azure&lt;/a&gt; by navigating to the App Service -&amp;gt; Overview and clicking &amp;ldquo;Get publish profile&amp;rdquo;.&lt;/p&gt;
+
+&lt;p&gt;If you are going to do this, it is &lt;strong&gt;VERY IMPORTANT&lt;/strong&gt; that you remember to keep the PublishSettings file outside of your solution so that it doesn&amp;rsquo;t get pushed to your git repo - it contains your App Service secrets in plain text.&lt;/p&gt;
+
+&lt;p&gt;After the line calling Publish-AspNet, append the following. Modify the last line for your environment. Now every time you right click your project and publish, the binaries will be WebDeployed up to Azure. You can even see the result of this in the Visual Studio Output window.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-powershell&#34;&gt;# Find the Root Namespace by reading the .xproj file
+$projectFile = Get-ChildItem -Filter *.xproj | Select-Object -First 1
+$xml = [xml](Get-Content $projectFile)
+$node = $xml.Project.PropertyGroup | Where-Object { $_.Label -eq &amp;quot;Globals&amp;quot; } | Select-Object RootNamespace
+
+# Build paths for the Zip file
+$source = Join-Path $publishProperties[&amp;quot;publishUrl&amp;quot;] &amp;quot;*&amp;quot;
+$destination = Join-Path (Split-Path $publishProperties[&amp;quot;publishUrl&amp;quot;]) &amp;quot;$($node.RootNamespace).zip&amp;quot;
+
+Echo &amp;quot;Creating Zip file from executable&amp;quot;
+Compress-Archive -Path $source -DestinationPath $destination -Force
+
+WAWSDeploy.exe $destination &amp;quot;C:\Users\%USERNAME%\Documents\myapp.azurewebsites.net.PublishSettings&amp;quot; /t &amp;quot;app_data\jobs\triggered\$($node.RootNamespace)&amp;quot; /v
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
     
     <item>
       <title>Using Python Tools for Visual Studio to debug a Google App Engine project</title>
