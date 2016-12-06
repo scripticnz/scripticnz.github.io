@@ -6,8 +6,267 @@
     <description>Recent content on Scriptic</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 03 Nov 2016 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 06 Dec 2016 00:00:00 +0000</lastBuildDate>
     <atom:link href="http://www.scriptic.co.nz/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Simplified Server-side Paging, Sorting, and Filtering with Angular-DataTables and .NET</title>
+      <link>http://www.scriptic.co.nz/blog/2016/12/simplified-server-side-paging-sorting-and-filtering-with-angular-datatables-and-net/</link>
+      <pubDate>Tue, 06 Dec 2016 00:00:00 +0000</pubDate>
+      
+      <guid>http://www.scriptic.co.nz/blog/2016/12/simplified-server-side-paging-sorting-and-filtering-with-angular-datatables-and-net/</guid>
+      <description>
+
+&lt;h3 id=&#34;introduction&#34;&gt;Introduction.&lt;/h3&gt;
+
+&lt;p&gt;It would be fair to say that I&amp;rsquo;m not a UX designer. I try (sometimes harder than I should) to make things look pretty, but I generally go for a minimalist style in my projects (the &lt;a href=&#34;https://github.com/krisbrooking/stark&#34;&gt;Hugo theme&lt;/a&gt; used for this blog is a good example), if only to reduce the number of hours I would otherwise waste lining my pixels up just right. As a result, I tend to overuse html tables as a medium for information display. And no this doesn&amp;rsquo;t mean my page layouts are table based; I use tables as they were intended - to display rows of data.&lt;/p&gt;
+
+&lt;p&gt;For many years I have used &lt;a href=&#34;https://datatables.net/&#34;&gt;DataTables&lt;/a&gt; to give my HTML tables a few additional controls, including paging, sorting, and filtering. I began using it because it was free, I continue to use it for the most part because it&amp;rsquo;s simple enough and it works. When I build a single page application with tables, I add &lt;a href=&#34;https://l-lin.github.io/angular-datatables/#/welcome&#34;&gt;angular-datatables&lt;/a&gt; on top so that I don&amp;rsquo;t have to deal with jQuery (even if it is still required under the covers).&lt;/p&gt;
+
+&lt;p&gt;If you have a table with a limited number of rows and can afford to send the entire table to the client with every request, DataTables just works. Unfortunately, this is almost never the case for my applications. Instead I usually require some sort of server-side filtering.&lt;/p&gt;
+
+&lt;p&gt;Over the years I have refined the server-side paging, sorting, and filtering code that I use to properly limit the number of rows returned from the database, and seeing as a Google search still returns few examples, I thought it was time to share. I cannot take credit for much of this code. I&amp;rsquo;ll admit that the first time I used it I didn&amp;rsquo;t know (or I guess care) exactly how it worked, but like my minimalist approach to UX, my code has evolved over the years, generally becoming more succinct and easier to maintain. This solution still borrows code (or ideas) from a bunch of places, including from &lt;a href=&#34;https://github.com/mcintyre321/mvc.jquery.datatables&#34;&gt;here&lt;/a&gt;, &lt;a href=&#34;http://stackoverflow.com/questions/23502034/model-binding-new-datatables-1-10-parameters&#34;&gt;here&lt;/a&gt;, and also probably originally &lt;a href=&#34;https://code.google.com/archive/p/datatables-asp-mvc/&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;If you just want the example project to play with, and like me five years ago you don&amp;rsquo;t care how it works&amp;hellip; &lt;a href=&#34;https://github.com/krisbrooking/datatables-dotnet&#34;&gt;here you go&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h3 id=&#34;how-it-works&#34;&gt;How It Works.&lt;/h3&gt;
+
+&lt;h4 id=&#34;client-side&#34;&gt;Client side&lt;/h4&gt;
+
+&lt;p&gt;Once all the Angular infrastructure is in place, we can add the HTML/JS code to make the request to the server. The table element needs a few directives that point to configuration objects on the page &lt;code&gt;$scope&lt;/code&gt;.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-html&#34;&gt;&amp;lt;div ng-controller=&amp;quot;tableController&amp;quot;&amp;gt;
+    &amp;lt;table id=&amp;quot;table&amp;quot; datatable=&amp;quot;&amp;quot; dt-options=&amp;quot;dtOptions&amp;quot; dt-columns=&amp;quot;dtColumns&amp;quot; class=&amp;quot;row-border hover&amp;quot;&amp;gt;&amp;lt;/table&amp;gt;
+&amp;lt;/div&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;As you can see, this will make a GET request to /api/users. There are more server-side options, but these are the ones that I typically start with.  &lt;code&gt;$scope.dtColumns&lt;/code&gt; should match the object properties that are sent back to the page.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-javascript&#34;&gt;$scope.dtOptions = DTOptionsBuilder
+    .newOptions()
+    .withOption(&#39;ajax&#39;, {
+        dataSrc: &amp;quot;data&amp;quot;,
+        url: &#39;/api/users&#39;,
+        type: &amp;quot;GET&amp;quot;
+    })
+    .withDataProp(&#39;data&#39;) // Property in the returned object which contains the actual data
+    .withOption(&#39;processing&#39;, true)
+    .withOption(&#39;serverSide&#39;, true)
+    .withOption(&#39;paging&#39;, true)
+    .withOption(&#39;autoWidth&#39;, false);
+
+$scope.dtColumns = [
+    DTColumnBuilder.newColumn(&#39;id&#39;),
+    DTColumnBuilder.newColumn(&#39;name&#39;)
+];
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&#34;model-binding&#34;&gt;Model Binding&lt;/h4&gt;
+
+&lt;p&gt;The &lt;a href=&#34;https://datatables.net/manual/server-side&#34;&gt;request object&lt;/a&gt; that DataTables sends to the server is relatively complicated. I borrowed the model and model binder for the current version of DataTables (1.10) from &lt;a href=&#34;http://stackoverflow.com/questions/23502034/model-binding-new-datatables-1-10-parameters&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;If we add the ModelBinder as an attribute for the controller action, magic happens, and we have all of the DataTables request info in an object that we can later use to filter data.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-csharp&#34;&gt;[HttpGet]
+[Route(&amp;quot;/api/users&amp;quot;)]
+public IActionResult GetUsers([ModelBinder(BinderType = typeof(DataTablesModelBinder))] DTParameterModel model)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&#34;the-controller&#34;&gt;The Controller&lt;/h4&gt;
+
+&lt;p&gt;In order to filter the data efficiently we want to use a Queryable as opposed to an Enumerable object. We want to modify the query before it is invoked and the data is returned. This way, we can query for exactly the data that we need, and not make the database do any more work than it has to. In this example I&amp;rsquo;m using Linq to Objects, but it will work the same way if your data is coming from another source such as a database.&lt;/p&gt;
+
+&lt;p&gt;The idea is that you pass your &lt;code&gt;DataTablesParameterModel&lt;/code&gt;, your dataset as a queryable, and a transform (the DTO to return to the page) to the Create method and it gives you back the object that DataTables on the client expects to see.&lt;/p&gt;
+
+&lt;p&gt;I have wired up some .NET Core style DI using open-generics so that I don&amp;rsquo;t have to duplicate it every time I need a new table.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-csharp&#34;&gt;services.AddScoped(typeof(IDataTablesQueryable&amp;lt;,&amp;gt;), typeof(DataTablesQueryable&amp;lt;,&amp;gt;));
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-csharp&#34;&gt;public class UsersController : Controller
+{
+    private readonly IDataTablesQueryable&amp;lt;User, UserDTO&amp;gt; _usersDataTable;
+
+    public UsersController(IDataTablesQueryable&amp;lt;User, UserDTO&amp;gt; usersDataTable)
+    {
+        _usersDataTable = usersDataTable;
+    }
+
+    [HttpGet]
+    [Route(&amp;quot;/api/users&amp;quot;)]
+    public IActionResult GetUsers([ModelBinder(BinderType = typeof(DataTablesModelBinder))] DTParameterModel model)
+    {
+        var users = new List&amp;lt;User&amp;gt;
+        {
+            new User() { Id = 1, Name = &amp;quot;Emma&amp;quot; },
+            new User() { Id = 2, Name = &amp;quot;Noah&amp;quot; },
+            new User() { Id = 3, Name = &amp;quot;Olivia&amp;quot; },
+            new User() { Id = 4, Name = &amp;quot;Liam&amp;quot; },
+            new User() { Id = 5, Name = &amp;quot;Sophia&amp;quot; },
+            new User() { Id = 6, Name = &amp;quot;Mason&amp;quot; },
+            new User() { Id = 7, Name = &amp;quot;Ava&amp;quot; },
+            new User() { Id = 8, Name = &amp;quot;Jacob&amp;quot; },
+            new User() { Id = 9, Name = &amp;quot;Isabella&amp;quot; },
+            new User() { Id = 10, Name = &amp;quot;William&amp;quot; }
+        };
+
+        var queryable = users.AsQueryable();
+
+        var dataTablesModel = _usersDataTable.Create(model, queryable, user =&amp;gt; new UserDTO { id = user.Id, name = user.Name });
+
+        return Ok(dataTablesModel);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&#34;the-iqueryable-filter&#34;&gt;The IQueryable Filter&lt;/h4&gt;
+
+&lt;p&gt;Again, this code is heavily inspired by &lt;a href=&#34;https://github.com/mcintyre321/mvc.jquery.datatables&#34;&gt;this&lt;/a&gt;, but has been cleaned up and simplified.&lt;/p&gt;
+
+&lt;p&gt;So what is actually happening?&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;The Filter method is passed the DataTables parameters, and the queryable with the transform which projects the result as the DTO (TResult).&lt;/li&gt;
+&lt;li&gt;The Filter method uses the DataTables parameters to add filters to the query. The first is a string search based on &lt;code&gt;dtParameters.Columns.Searchable&lt;/code&gt;. The second is a sort filter based on &lt;code&gt;dtParameters.Order&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;The query is again modified to take only the relevant page of data.&lt;/li&gt;
+&lt;li&gt;The queries (&lt;code&gt;queryable.Count()&lt;/code&gt;, &lt;code&gt;filteredData.Count()&lt;/code&gt;, and &lt;code&gt;page&lt;/code&gt;) are finally invoked and the relevant data is returned to the caller in the DataTablesModel object.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-csharp&#34;&gt;public interface IDataTablesQueryable&amp;lt;TModel, TResult&amp;gt;
+{
+    DataTablesModel Create(DTParameterModel parameters, IQueryable&amp;lt;TModel&amp;gt; queryable, Expression&amp;lt;Func&amp;lt;TModel, TResult&amp;gt;&amp;gt; transform);
+}
+
+public class DataTablesQueryable&amp;lt;TModel, TResult&amp;gt; : IDataTablesQueryable&amp;lt;TModel, TResult&amp;gt;
+{
+    public DataTablesModel Create(DTParameterModel parameters, IQueryable&amp;lt;TModel&amp;gt; queryable, Expression&amp;lt;Func&amp;lt;TModel, TResult&amp;gt;&amp;gt; transform)
+    {
+        var model = new DataTablesModel();
+
+        // 1. The Filter method is passed the DataTables parameters, and the queryable with the transform which projects the result as the DTO (TResult).
+        var filteredData = Filter(parameters, queryable.Select(transform));
+
+        // 3. The query is again modified to take only the relevant page of data.
+        var page = filteredData.Skip(parameters.Start);
+        if (parameters.Length &amp;gt; -1)
+        {
+            page = page.Take(parameters.Length);
+        }
+
+        // 4. The queries are finally invoked and the relevant data is returned to the caller in the DataTablesModel object.
+        model.draw = parameters.Draw;
+        model.recordsTotal = queryable.Count();
+        model.recordsFiltered = filteredData.Count();
+        model.data = ((IQueryable&amp;lt;object&amp;gt;)page).ToArray();
+
+        return model;
+    }
+
+    // 2. The Filter method uses the DataTables parameters to add filters to the query.
+    public IQueryable&amp;lt;T&amp;gt; Filter&amp;lt;T&amp;gt;(DTParameterModel dtParameters, IQueryable&amp;lt;T&amp;gt; data)
+    {
+        var columns = typeof(T).GetProperties().ToArray();
+
+        // The first is a string search based on dtParameters.Columns.Searchable.
+        if (!string.IsNullOrEmpty(dtParameters.Search.Value))
+        {
+            var filterParts = new List&amp;lt;string&amp;gt;();
+            foreach (var column in dtParameters.Columns.Where(x =&amp;gt; !string.IsNullOrEmpty(x.Data)))
+            {
+                if (column.Searchable)
+                {
+                    var filter = string.Format(&amp;quot;{0}.ToString().ToLower().Contains(\&amp;quot;{1}\&amp;quot;)&amp;quot;, 
+                        columns.First(x =&amp;gt; x.Name == column.Data).Name, 
+                        dtParameters.Search.Value.ToLower().Replace(&amp;quot;\&amp;quot;&amp;quot;, &amp;quot;\&amp;quot;\&amp;quot;&amp;quot;));
+
+                    filterParts.Add(filter);
+                }
+            }
+            data = data.Where(string.Join(&amp;quot; or &amp;quot;, filterParts));
+        }
+
+        // The second is a sort filter based on dtParameters.Order.
+        string sortString = dtParameters.Order.Count() &amp;gt; 0 ? 
+            string.Join(&amp;quot;, &amp;quot;, dtParameters.Order.Select(x =&amp;gt; string.Format(&amp;quot;{0} {1}&amp;quot;, columns[x.Column].Name, x.Dir))) : 
+            columns[0].Name;
+
+        data = data.OrderBy(sortString);
+
+        return data;
+    }
+}
+
+public class DataTablesModel
+{
+    public int draw { get; set; }
+
+    public int recordsFiltered { get; set; }
+
+    public int recordsTotal { get; set; }
+
+    public object[] data { get; set; }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;so-how-does-this-help-me&#34;&gt;So How Does This Help Me?&lt;/h3&gt;
+
+&lt;p&gt;This example provides the infrastructure to start a new project, however, by itself it isn&amp;rsquo;t super useful. This solution really shines when we retrieve data from a database and want to optimally craft each SQL query. I haven&amp;rsquo;t included code for this because of current compatibility issues. As of this writing we are stuck in the middle of two versions of Entity Framework, neither of which satisfies all the requirements of this example when building for .NET Core. EF Core doesn&amp;rsquo;t yet support all of the IQueryable bits required, and EF6 requires a separate non .NET Core library. It all gets a bit messy, so instead of including code I will show the resulting SQL queries that a database would receive.&lt;/p&gt;
+
+&lt;p&gt;First let&amp;rsquo;s see what gets sent to the database when there is no filtering. First thing you might notice is that the first two queries are exactly the same - this will change when we filter the data by entering a search string.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sql&#34;&gt;-- Get the total record count
+SELECT [GroupBy1].[A1] AS [C1]
+    FROM ( SELECT 
+        COUNT(1) AS [A1]
+        FROM [dbo].[Users] AS [Extent1]
+    )  AS [GroupBy1]
+
+-- Get the filtered record count
+SELECT [GroupBy1].[A1] AS [C1]
+    FROM ( SELECT 
+        COUNT(1) AS [A1]
+        FROM [dbo].[Users] AS [Extent1]
+    )  AS [GroupBy1]
+
+-- Get the first page of data
+SELECT 
+    [Extent1].[Id] AS [Id], 
+    [Extent1].[Name] AS [Name]
+    FROM [dbo].[Users] AS [Extent1]
+    ORDER BY [Extent1].[Id] ASC
+    OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY 
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;If I search for &amp;ldquo;liam&amp;rdquo;, the following SQL is generated. As can be seen, the second and third queries change to reflect the filter. You might notice that Id is cast to nvarchar. Generally I will tell datatables to exclude the Id column from the search and this won&amp;rsquo;t be included in the generated SQL. But this does illustrate a limitation with this solution; every data type will be treated as a string. A solution to this limitation already exists &lt;a href=&#34;https://github.com/mcintyre321/mvc.jquery.datatables&#34;&gt;here&lt;/a&gt;. Again, my solution works for me in the majority of cases.&lt;/p&gt;
+
+&lt;p&gt;I won&amp;rsquo;t claim that this is the most efficient way to query the database, there may be a more optimal SQL query (eliminating the duplicate query above is an obvious start), but this is clearly much better than asking the database for every row in the table and performing the filtering in memory.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sql&#34;&gt;-- Get the total record count
+SELECT [GroupBy1].[A1] AS [C1]
+    FROM ( SELECT 
+        COUNT(1) AS [A1]
+        FROM [dbo].[Users] AS [Extent1]
+    )  AS [GroupBy1]
+
+-- Get the filtered record count
+SELECT [GroupBy1].[A1] AS [C1]
+    FROM ( SELECT 
+        COUNT(1) AS [A1]
+        FROM [dbo].[Users] AS [Extent1]
+        WHERE (LOWER( CAST( [Extent1].[Id] AS nvarchar(max))) LIKE N&#39;%liam%&#39;) OR (LOWER(CASE WHEN ([Extent1].[Name] IS NULL) THEN N&#39;&#39; ELSE [Extent1].[Name] END) LIKE N&#39;%liam%&#39;)
+    )  AS [GroupBy1]
+
+-- Get the first page of data
+SELECT 
+    [Extent1].[Id] AS [Id], 
+    [Extent1].[Name] AS [Name]
+    FROM [dbo].[Users] AS [Extent1]
+    WHERE (LOWER( CAST( [Extent1].[Id] AS nvarchar(max))) LIKE N&#39;%liam%&#39;) OR (LOWER(CASE WHEN ([Extent1].[Name] IS NULL) THEN N&#39;&#39; ELSE [Extent1].[Name] END) LIKE N&#39;%liam%&#39;)
+    ORDER BY [Extent1].[Id] ASC
+    OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY 
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
     
     <item>
       <title>Publishing a .NET Core Console Application as an Azure Web Job from Visual Studio</title>
