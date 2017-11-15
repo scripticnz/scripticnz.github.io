@@ -148,7 +148,7 @@ pre {
     text-decoration: none;
     transition: color 0.2s ease-in;
 }
-.sidebar-link:hover{
+.sidebar-link:hover, .sidebar-link:active, .sidebar-link:visited{
     font-weight: 400;
     text-decoration: none;
     color: #ffffff;
